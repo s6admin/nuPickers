@@ -17,10 +17,12 @@
                     
                     var currentId = 0;
                     var parentId = 0;
+                    var docTypeAlias = "";
 
                     if (editorState.current) {
                         currentId = editorState.current.id;
-			            parentId = editorState.current.parentId;
+                        parentId = editorState.current.parentId;
+                        docTypeAlias = editorState.current.contentTypeAlias;
                     }
 
                     return $http({
@@ -29,13 +31,14 @@
                         params: {
                             'currentId': currentId,
                             'parentId': parentId,
-                            'propertyAlias': model.alias
+                            'propertyAlias': model.alias,							
                         },
                         data: {
                             'config': model.config,
                             'typeahead': typeahead,
                             'keys': keys,
-                            'page' : page
+                            'page': page,
+							'docTypeAlias': docTypeAlias
                         }
                     });
 

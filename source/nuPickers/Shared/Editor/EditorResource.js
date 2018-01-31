@@ -19,7 +19,7 @@
                  * @returns {Object} - a promise of an http response with data of an array of 'data editor item' objects: [{ key: '', label: '' }]
                  */
                 getEditorDataItems: function (model, query) {
-
+										
                     if (angular.isString(query)) { // typeahead
                         return dataSourceResource.getEditorDataItems(model, query);
 

@@ -213,6 +213,14 @@
         /// </summary>
         private string PropertyEditorAlias { get; set; }
 
+		/// <summary>
+		/// S6 Gets or sets the documentTypeAlias of this Picker's parent container.
+		/// </summary>
+		/// <value>
+		/// The document type alias.
+		/// </value>
+		private string DocumentTypeAlias { get; set; }
+
         /// <summary>
         /// Property accessor to ensure the query to populate the data-type configruation options is only done once per server
         /// </summary>
@@ -268,6 +276,7 @@
                             this.ContextId,
                             this.ParentId,
                             this.PropertyAlias,
+							this.DocumentTypeAlias,
                             DataSource.GetDataSource(this.PropertyEditorAlias, this.GetDataTypePreValue("dataSource").Value),
                             this.GetDataTypePreValue("customLabel").Value,
                             typeahead);
@@ -287,7 +296,8 @@
                 editorDataItems = Editor.GetEditorDataItems(
                                     this.ContextId,
                                     this.ParentId,
-                                    this.PropertyAlias,
+                                    this.PropertyAlias,									
+									this.DocumentTypeAlias,
                                     DataSource.GetDataSource(this.PropertyEditorAlias, this.GetDataTypePreValue("dataSource").Value),
                                     this.GetDataTypePreValue("customLabel").Value,
                                     this.PickedKeys.ToArray());

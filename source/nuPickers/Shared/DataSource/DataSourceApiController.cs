@@ -14,6 +14,7 @@
     using SqlDataSource = SqlDataSource.SqlDataSource;
     using XmlDataSource = XmlDataSource.XmlDataSource;
 
+	// S6 Modified ApiResponse to also accept a docTypeAlias Uri parameter
     [PluginController("nuPickers")]
     public class DataSourceApiController : UmbracoAuthorizedJsonController
     {
@@ -60,6 +61,7 @@
                                                         currentId,
                                                         parentId,
                                                         propertyAlias,
+														(string)data.docTypeAlias,
                                                         dataSource,
                                                         (string)data.config.customLabel,
                                                         (string)data.typeahead);
@@ -73,6 +75,7 @@
                                                         currentId,
                                                         parentId,
                                                         propertyAlias,
+														(string)data.docTypeAlias,
                                                         dataSource,
                                                         (string)data.config.customLabel,
                                                         ((JArray)data.keys).Select(x => x.ToString()).ToArray());
@@ -88,6 +91,7 @@
                                                         currentId,
                                                         parentId,
                                                         propertyAlias,
+														(string)data.docTypeAlias,
                                                         dataSource,
                                                         (string)data.config.customLabel,
                                                         (int)data.config.pagedListPicker.itemsPerPage,
@@ -103,7 +107,8 @@
                                                         currentId,
                                                         parentId,
                                                         propertyAlias,
-                                                        dataSource,
+														(string)data.docTypeAlias,
+														dataSource,
                                                         (string)data.config.customLabel);
 
                     response.Total = response.EditorDataItems.Count();

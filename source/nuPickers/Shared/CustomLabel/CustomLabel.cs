@@ -27,17 +27,25 @@ namespace nuPickers.Shared.CustomLabel
 
         private string PropertyAlias { get; set; }
 
+		// S6
+		private int DocTypeId { get; set; }
+		private string DocTypeAlias { get; set; }
+		private int ParentId { get; set; }		
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="macroAlias">alias of Macro to execute</param>
         /// <param name="contextId">node, media or member id</param>
         /// <param name="propertyAlias">property alias</param>
-        internal CustomLabel(string macroAlias, int contextId, string propertyAlias)
+        internal CustomLabel(string macroAlias, int contextId, string propertyAlias, int parentId, string docTypeAlias = "")
         {
             this.MacroAlias = macroAlias;
             this.ContextId = contextId;
             this.PropertyAlias = propertyAlias;
+			//this.DocTypeId = docTypeId;
+			this.DocTypeAlias = docTypeAlias;
+			this.ParentId = parentId;
 
             // the macro requires a published context to run in
             Node currentNode = uQuery.GetNode(contextId);
@@ -105,6 +113,11 @@ namespace nuPickers.Shared.CustomLabel
                 macro.MacroAttributes.Add("keys", keys);
                 macro.MacroAttributes.Add("counter", counter);
                 macro.MacroAttributes.Add("total", total);
+
+				// S6
+				//macro.MacroAttributes.Add("docTypeId".ToLower(), this.DocTypeId);
+				macro.MacroAttributes.Add("docTypeAlias".ToLower(), this.DocTypeAlias);
+				macro.MacroAttributes.Add("parentId".ToLower(), this.ParentId);
 
                 label = this.RenderToString(macro);
             }
