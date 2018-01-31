@@ -14,8 +14,9 @@
 	/// </summary>
 	public class RelationMappingEvent : ApplicationEventHandler
 	{
-
-		private List<Picker> pickers = new List<Picker>();
+		
+		// Picker Lists grouped by each entity being saved
+		private Dictionary<Guid, List<Picker>> allSavedPickers;
 
 		protected override void ApplicationStarted(UmbracoApplicationBase umbracoApplication, ApplicationContext applicationContext)
 		{
@@ -68,10 +69,17 @@
 		/// <param name="changedEntities"></param>
 		private void Saving(IService sender, IEnumerable<IContentBase> changedEntities)
 		{
+
+			allSavedPickers = new Dictionary<Guid, List<Picker>>();
+
 			foreach (IContent entity in changedEntities)
 			{
+
 				if (entity != null)
 				{
+
+					List<Picker> entityPickers = new List<Picker>();
+
 					// Loop all Pickers in saved Content item
 					foreach (PropertyType propertyType in entity.PropertyTypes.Where(x => PickerPropertyValueConverter.IsPicker(x.PropertyEditorAlias)))
 					{
@@ -105,11 +113,12 @@
 								}
 
 							}
-
-							pickers.Add(picker); // Retain any relation-mapped Picker(s) for Save event
-													
+														
+							entityPickers.Add(picker); // Retain any relation-mapped Picker(s) for Save event													
 						}
 					}
+
+					allSavedPickers.Add(entity.Key, entityPickers);
 				}
 			}
 		}
@@ -121,13 +130,20 @@
 				if (entity != null)
 				{
 
-					// Loop Picker editors
+					// Loop Picker editors for current saved entity
 
 					Picker picker = null;
 
 					foreach (PropertyType propertyType in entity.PropertyTypes.Where(x => PickerPropertyValueConverter.IsPicker(x.PropertyEditorAlias)))
 					{
-						picker = pickers.FirstOrDefault(x => x.PropertyAlias == propertyType.Alias);
+						try
+						{
+							picker = allSavedPickers[entity.Key].FirstOrDefault(x => x.PropertyAlias == propertyType.Alias);
+						} catch(Exception ex)
+						{
+							// TODO Handle as seen fit
+							Console.WriteLine(ex.Message);
+						}						
 
 						if (picker == null)
 						{
@@ -137,14 +153,16 @@
 						bool isRelationsOnly = picker.GetDataTypePreValue("saveFormat").Value == "relationsOnly";
 												
 						RelationMapping.UpdateRelationMapping(
-							picker.ContextId, // savedEntity.Id
-							picker.PropertyAlias, // propertyType.Alias
+							entity.Id,
+							picker.PropertyAlias,
 							picker.RelationTypeAlias,
 							isRelationsOnly,
 							picker.PickedIds.ToArray());
 					}
 				}
 			}
+
+			allSavedPickers = null;
 		}
 	}
 }
