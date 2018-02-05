@@ -96,9 +96,9 @@
                 // check current context is of the correct object type (as according to the relation type)
                 if (ApplicationContext.Current.Services.EntityService.GetObjectType(contextId) == UmbracoObjectTypesExtensions.GetUmbracoObjectType(relationType.ChildObjectType))
                 {
-                    // for each picked item 
+                    
                     foreach (int pickedId in pickedIds)
-                    {
+					{ 
                         // check picked item context if of the correct object type (as according to the relation type)
                         if (ApplicationContext.Current.Services.EntityService.GetObjectType(pickedId) == UmbracoObjectTypesExtensions.GetUmbracoObjectType(relationType.ParentObjectType))
                         {

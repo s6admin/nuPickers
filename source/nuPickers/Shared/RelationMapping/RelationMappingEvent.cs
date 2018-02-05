@@ -15,8 +15,8 @@
 	public class RelationMappingEvent : ApplicationEventHandler
 	{
 		
-		// Picker Lists grouped by each entity being saved
-		private Dictionary<Guid, List<Picker>> allSavedPickers;
+		// Picker Lists that have changed selections, grouped by each entity being saved
+		private Dictionary<Guid, List<Picker>> dirtyPickers;
 
 		protected override void ApplicationStarted(UmbracoApplicationBase umbracoApplication, ApplicationContext applicationContext)
 		{
@@ -25,7 +25,7 @@
 			MediaService.Saving += this.MediaService_Saving;
 			MemberService.Saving += this.MemberService_Saving;
 
-			ContentService.Saved += ContentService_Saved;
+			ContentService.Saved += ContentService_Saved;			
 			MediaService.Saved += MediaService_Saved;
 			MemberService.Saved += MemberService_Saved;
 
@@ -49,7 +49,7 @@
 
 		private void ContentService_Saved(IContentService sender, SaveEventArgs<IContent> e)
 		{
-			this.Saved((IService)sender, e.SavedEntities);
+			this.Saved((IService)sender, e.SavedEntities);			
 		}
 
 		private void MediaService_Saved(IMediaService sender, SaveEventArgs<IMedia> e)
@@ -70,55 +70,62 @@
 		private void Saving(IService sender, IEnumerable<IContentBase> changedEntities)
 		{
 
-			allSavedPickers = new Dictionary<Guid, List<Picker>>();
-
+			dirtyPickers = new Dictionary<Guid, List<Picker>>();
+						
 			foreach (IContent entity in changedEntities)
 			{
 
-				if (entity != null)
+				if (entity != null && entity.IsDirty())
 				{
-
-					List<Picker> entityPickers = new List<Picker>();
+										
+					List<Picker> dirtyEntityPickers = new List<Picker>();
 
 					// Loop all Pickers in saved Content item
 					foreach (PropertyType propertyType in entity.PropertyTypes.Where(x => PickerPropertyValueConverter.IsPicker(x.PropertyEditorAlias)))
 					{
 
-						Picker picker = new Picker(
-										   entity.Id,
-										   entity.ParentId,
-										   propertyType.Alias,
-										   propertyType.DataTypeDefinitionId,
-										   propertyType.PropertyEditorAlias,
-										   entity.GetValue(propertyType.Alias));
-
-						if (!string.IsNullOrWhiteSpace(picker.RelationTypeAlias))
+						if (entity.IsPropertyDirty(propertyType.Alias))
 						{
-														
-							bool isRelationsOnly = picker.GetDataTypePreValue("saveFormat").Value == "relationsOnly";
-							if (isRelationsOnly)
+
+							Picker picker = new Picker(
+											   entity.Id,
+											   entity.ParentId,
+											   propertyType.Alias,
+											   propertyType.DataTypeDefinitionId,
+											   propertyType.PropertyEditorAlias,
+											   entity.GetValue(propertyType.Alias));
+							
+							if (!string.IsNullOrWhiteSpace(picker.RelationTypeAlias))
 							{
-								
-								if (picker.SavedValue == null)
-								{
-									picker.PickedKeys = new string[] { };
-								}
-								else
-								{
-									// manually set on picker obj, so it doesn't then attempt to read picked keys from the database
-									picker.PickedKeys = SaveFormat.GetKeys(picker.SavedValue.ToString()).ToArray();
 
-									// delete saved value (setting it to null)
-									entity.SetValue(propertyType.Alias, null);
+								bool isRelationsOnly = picker.GetDataTypePreValue("saveFormat").Value == "relationsOnly";
+								if (isRelationsOnly)
+								{
+
+									if (picker.SavedValue == null)
+									{
+										picker.PickedKeys = new string[] { };
+									}
+									else
+									{
+										// manually set on picker obj, so it doesn't then attempt to read picked keys from the database
+										picker.PickedKeys = SaveFormat.GetKeys(picker.SavedValue.ToString()).ToArray();
+																				
+										// delete saved value (setting it to null)
+										entity.SetValue(propertyType.Alias, null);										
+									}
+
 								}
 
+								dirtyEntityPickers.Add(picker); // Retain any relation-mapped Picker(s) for Save event													
 							}
-														
-							entityPickers.Add(picker); // Retain any relation-mapped Picker(s) for Save event													
 						}
 					}
 
-					allSavedPickers.Add(entity.Key, entityPickers);
+					if (dirtyEntityPickers.Any())
+					{
+						dirtyPickers.Add(entity.Key, dirtyEntityPickers);
+					}					
 				}
 			}
 		}
@@ -127,42 +134,38 @@
 		{
 			foreach (IContent entity in changedEntities)
 			{
-				if (entity != null)
-				{
+				// Loop Picker editors for current saved entity
+				Picker dirtyPicker = null;
 
-					// Loop Picker editors for current saved entity
-
-					Picker picker = null;
-
-					foreach (PropertyType propertyType in entity.PropertyTypes.Where(x => PickerPropertyValueConverter.IsPicker(x.PropertyEditorAlias)))
+				foreach (PropertyType propertyType in entity.PropertyTypes.Where(x => PickerPropertyValueConverter.IsPicker(x.PropertyEditorAlias)))
+				{						
+					try
 					{
-						try
-						{
-							picker = allSavedPickers[entity.Key].FirstOrDefault(x => x.PropertyAlias == propertyType.Alias);
-						} catch(Exception ex)
-						{
-							// TODO Handle as seen fit
-							Console.WriteLine(ex.Message);
-						}						
+						dirtyPicker = this.dirtyPickers[entity.Key].FirstOrDefault(x => x.PropertyAlias == propertyType.Alias);
+					} catch(Exception ex)
+					{
+						// TODO Handle as seen fit
+						Console.WriteLine(ex.Message);
+					}						
 
-						if (picker == null)
-						{
-							continue;
-						}
-
-						bool isRelationsOnly = picker.GetDataTypePreValue("saveFormat").Value == "relationsOnly";
-												
-						RelationMapping.UpdateRelationMapping(
-							entity.Id,
-							picker.PropertyAlias,
-							picker.RelationTypeAlias,
-							isRelationsOnly,
-							picker.PickedIds.ToArray());
+					// If no dirtyPicker was found selections are the same, proceed to next iteration
+					if (dirtyPicker == null)
+					{
+						continue;
 					}
+
+					bool isRelationsOnly = dirtyPicker.GetDataTypePreValue("saveFormat").Value == "relationsOnly";
+
+					RelationMapping.UpdateRelationMapping(
+						entity.Id,
+						dirtyPicker.PropertyAlias,
+						dirtyPicker.RelationTypeAlias,
+						isRelationsOnly,
+						dirtyPicker.PickedIds.ToArray());
+											
 				}
 			}
-
-			allSavedPickers = null;
-		}
+			dirtyPickers = null;
+		}		
 	}
 }
