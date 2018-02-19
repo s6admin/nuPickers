@@ -72,7 +72,7 @@
 
 			dirtyPickers = new Dictionary<Guid, List<Picker>>();
 						
-			foreach (IContent entity in changedEntities)
+			foreach (IContentBase entity in changedEntities)
 			{
 
 				if (entity != null && entity.IsDirty())
@@ -132,7 +132,7 @@
 
 		private void Saved(IService sender, IEnumerable<IContentBase> changedEntities)
 		{
-			foreach (IContent entity in changedEntities)
+			foreach (IContentBase entity in changedEntities)
 			{
 				// Loop Picker editors for current saved entity
 				Picker dirtyPicker = null;
