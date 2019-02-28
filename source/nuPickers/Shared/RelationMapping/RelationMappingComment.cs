@@ -97,7 +97,7 @@
                     this.PropertyAlias =  (xml.Attribute("PropertyAlias") != null) ? xml.Attribute("PropertyAlias").Value : string.Empty; // backwards compatable null check (propertyAlias a new value as of v1.1.4)
                     this.PropertyTypeId = int.Parse(xml.Attribute("PropertyTypeId").Value);
                     this.DataTypeDefinitionId = int.Parse(xml.Attribute("DataTypeDefinitionId").Value);
-                    this.SortOrder = xml.Attribute("SortOrder").Value != null ? int.Parse(xml.Attribute("SortOrder").Value) : -1; // backwards compatable null check
+                    this.SortOrder = xml.Attribute("SortOrder") != null && xml.Attribute("SortOrder").Value != null ? int.Parse(xml.Attribute("SortOrder").Value) : -1; // backwards compatable null check
                 }
                 catch
                 {
