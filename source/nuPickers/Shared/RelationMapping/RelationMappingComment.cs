@@ -11,6 +11,15 @@
     /// </summary>
     public class RelationMappingComment
     {
+		// S6 Sort Order cherry-picked from the loveable https://github.com/enkelmedia/nuPickers/commit/3656d692b22423f6f71865e1a93458d7bd147fb1
+		/// <summary>
+		/// Keep track of the relation items position within a property editor otherwise sort order is not retained for "Relation Only" save formats.
+		/// </summary>
+		/// <value>
+		/// The sort order.
+		/// </value>
+		public int SortOrder { get; set; }
+
         /// <summary>
         /// The property alias of the picker using relations
         /// </summary>
@@ -34,6 +43,7 @@
         internal RelationMappingComment(int contextId, string propertyAlias)
         {
             PropertyType propertyType = null;
+			this.SortOrder = -1;
 
             // is there a better way of getting the property types for an id without having to check content / media / members independently ?
             var content = ApplicationContext.Current.Services.ContentService.GetById(contextId);
@@ -87,12 +97,14 @@
                     this.PropertyAlias =  (xml.Attribute("PropertyAlias") != null) ? xml.Attribute("PropertyAlias").Value : string.Empty; // backwards compatable null check (propertyAlias a new value as of v1.1.4)
                     this.PropertyTypeId = int.Parse(xml.Attribute("PropertyTypeId").Value);
                     this.DataTypeDefinitionId = int.Parse(xml.Attribute("DataTypeDefinitionId").Value);
+                    this.SortOrder = xml.Attribute("SortOrder").Value != null ? int.Parse(xml.Attribute("SortOrder").Value) : -1; // backwards compatable null check
                 }
                 catch
                 {
                     this.PropertyAlias = string.Empty;
                     this.PropertyTypeId = -1;
                     this.DataTypeDefinitionId = -1;
+                    this.SortOrder = -1;
                 }
             }
         }
@@ -124,7 +136,7 @@
         /// <returns>String XML fragment</returns>
         internal string GetComment()
         {
-            return "<RelationMapping PropertyAlias=\"" + this.PropertyAlias + "\" PropertyTypeId=\"" + this.PropertyTypeId.ToString() + "\" DataTypeDefinitionId=\"" + this.DataTypeDefinitionId.ToString() + "\" />";
+            return "<RelationMapping PropertyAlias=\"" + this.PropertyAlias + "\" PropertyTypeId=\"" + this.PropertyTypeId.ToString() + "\" DataTypeDefinitionId=\"" + this.DataTypeDefinitionId.ToString() + "\" SortOrder=\"" + this.SortOrder.ToString() + "\" />";
         }
 
     }
