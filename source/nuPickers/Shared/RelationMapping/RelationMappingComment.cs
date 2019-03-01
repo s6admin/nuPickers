@@ -18,7 +18,15 @@
 		/// <value>
 		/// The sort order.
 		/// </value>
-		public int SortOrder { get; set; }
+		public int ParentSortOrder { get; set; }
+
+		/// <summary>
+		/// A second sort order for bi-directional Relations.
+		/// </summary>
+		/// <value>
+		/// The child sort order.
+		/// </value>
+		public int ChildSortOrder { get; set; }
 
         /// <summary>
         /// The property alias of the picker using relations
@@ -43,7 +51,8 @@
         internal RelationMappingComment(int contextId, string propertyAlias)
         {
             PropertyType propertyType = null;
-			this.SortOrder = -1;
+			this.ParentSortOrder = -1;
+			this.ChildSortOrder = -1;
 
             // is there a better way of getting the property types for an id without having to check content / media / members independently ?
             var content = ApplicationContext.Current.Services.ContentService.GetById(contextId);
@@ -97,14 +106,16 @@
                     this.PropertyAlias =  (xml.Attribute("PropertyAlias") != null) ? xml.Attribute("PropertyAlias").Value : string.Empty; // backwards compatable null check (propertyAlias a new value as of v1.1.4)
                     this.PropertyTypeId = int.Parse(xml.Attribute("PropertyTypeId").Value);
                     this.DataTypeDefinitionId = int.Parse(xml.Attribute("DataTypeDefinitionId").Value);
-                    this.SortOrder = xml.Attribute("SortOrder") != null && xml.Attribute("SortOrder").Value != null ? int.Parse(xml.Attribute("SortOrder").Value) : -1; // backwards compatable null check
+                    this.ParentSortOrder = xml.Attribute("ParentSortOrder") != null && xml.Attribute("ParentSortOrder").Value != null ? int.Parse(xml.Attribute("ParentSortOrder").Value) : -1; // backwards compatable null check
+					this.ChildSortOrder = xml.Attribute("ChildSortOrder") != null && xml.Attribute("ChildSortOrder").Value != null ? int.Parse(xml.Attribute("ChildSortOrder").Value) : -1;
                 }
                 catch
                 {
                     this.PropertyAlias = string.Empty;
                     this.PropertyTypeId = -1;
                     this.DataTypeDefinitionId = -1;
-                    this.SortOrder = -1;
+                    this.ParentSortOrder = -1;
+					this.ChildSortOrder = -1;
                 }
             }
         }
@@ -136,7 +147,7 @@
         /// <returns>String XML fragment</returns>
         internal string GetComment()
         {
-            return "<RelationMapping PropertyAlias=\"" + this.PropertyAlias + "\" PropertyTypeId=\"" + this.PropertyTypeId.ToString() + "\" DataTypeDefinitionId=\"" + this.DataTypeDefinitionId.ToString() + "\" SortOrder=\"" + this.SortOrder.ToString() + "\" />";
+            return "<RelationMapping PropertyAlias=\"" + this.PropertyAlias + "\" PropertyTypeId=\"" + this.PropertyTypeId.ToString() + "\" DataTypeDefinitionId=\"" + this.DataTypeDefinitionId.ToString() + "\" ParentSortOrder=\"" + this.ParentSortOrder.ToString() + "\" ChildSortOrder=\"" + this.ChildSortOrder.ToString() + "\" />";
         }
 
     }
