@@ -118,6 +118,11 @@
         //[Obsolete("[v2.0.0] rename to Value (as it might be the saved value, or it might be the published value)")]
         public object SavedValue { get; private set; }
 
+		public IEnumerable<string> PrevPickedKeys
+		{
+			get; set;
+		}
+
         /// <summary>
         /// returns a collection of all picked keys (regardless as to how / where they are persisted)
         /// </summary>
@@ -125,8 +130,8 @@
         {
             get
             {
-                if (this.pickedKeys == null)
-                {
+                if (this.pickedKeys == null) //  || this.pickedKeys.Count() == 0) S6 TODO Add empty collection check here in addition to NULL so empty pickers will still check database for valid existing records? (see RelationMappingEvent.cs Saving method)
+				{
                     if (this.GetDataTypePreValue("saveFormat").Value == "relationsOnly")
                     {
                         // attempt to find relations data in memory cache

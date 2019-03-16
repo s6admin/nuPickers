@@ -148,7 +148,8 @@
 				{
 					foreach (IRelation relation in relations)
 					{
-						ApplicationContext.Current.Services.RelationService.Delete(relation);
+						// TODO S6 never allow nuPickers to hard delete anything. Flag via soft delete in Comment data until property editor reliable retrieves pickedKeys even when the node being saved isn't the current dashboard page
+						//ApplicationContext.Current.Services.RelationService.Delete(relation);
 					}
 				}
 			}

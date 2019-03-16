@@ -84,8 +84,11 @@
 					foreach (PropertyType propertyType in entity.PropertyTypes.Where(x => PickerPropertyValueConverter.IsPicker(x.PropertyEditorAlias)))
 					{
 
-						if (entity.IsPropertyDirty(propertyType.Alias))
-						{
+						/* S6 Note: NULL or empty collection values in nuPicker aren't being flagged as Dirty so ALWAYS check each picker control
+							and determine "dirty" status based on the property value
+						*/
+						//if (entity.IsPropertyDirty(propertyType.Alias))
+						//{
 
 							Picker picker = new Picker(
 											   entity.Id,
@@ -97,14 +100,41 @@
 							
 							if (!string.IsNullOrWhiteSpace(picker.RelationTypeAlias))
 							{
-
+															
+								// Using the ContentService.Save() to update a node will delete all existing relations. https://github.com/uComponents/nuPickers/issues/105
 								bool isRelationsOnly = picker.GetDataTypePreValue("saveFormat").Value == "relationsOnly";
 								if (isRelationsOnly)
 								{
 
 									if (picker.SavedValue == null)
 									{
-										picker.PickedKeys = new string[] { };
+										/* S6 TODO
+											
+											The nuPicker library needs a way to distinguish between a property editor being truly empty (due to an admin
+											removing relation items in the control) versus a naturally dirty editor (ie. UpdateDate change?) having its
+											valid existing relations aggressively deleted because the PickedKeys is coincidentally empty.
+											
+											1. Conceptually, if the RelationsOnly Picker control retrieved its pickedKeys on construction/render and stored
+											the values in a second temporary property (ie. PrevPickedKeys) it could be compared to the PickedKeys 
+											property directly when the parent node is saved to determine the change in selection. That basically sounds like
+											how any Umbraco data is compared within the cache.
+											
+											2. Another option could be to explicitly use the PickedKeys NULL value (make no changes) versus an empty collection
+											implying the admin has removed items and the database Relations SHOULD be cleared.
+
+											Its possible, though unclear, that retrieving the Cache or DB values each time the PickedKeys property is
+											referenced (its WITHIN the PickedKeys property getter) is causing a problem.
+
+											Either:
+											1. DON'T set an empty collection for PickedKeys here 
+											or
+											2. ADD a check to Picker.cs PickedKeys that also includes an empty collection to fallback to the database
+
+											
+
+										*/
+										picker.PickedKeys = new string[] { };  // Leave NULL as NULL...use it to indicate no relation changes should be made
+										//continue; // Skip NULL nuPicker editors so valid existing relations aren't wiped from the database
 									}
 									else
 									{
@@ -119,7 +149,7 @@
 
 								dirtyEntityPickers.Add(picker); // Retain any relation-mapped Picker(s) for Save event													
 							}
-						}
+						//}
 					}
 
 					if (dirtyEntityPickers.Any())
