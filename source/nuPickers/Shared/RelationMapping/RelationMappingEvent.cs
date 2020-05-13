@@ -87,8 +87,8 @@
 						/* S6 Note: NULL or empty collection values in nuPicker aren't being flagged as Dirty so ALWAYS check each picker control
 							and determine "dirty" status based on the property value
 						*/
-						//if (entity.IsPropertyDirty(propertyType.Alias))
-						//{
+						if (entity.IsPropertyDirty(propertyType.Alias))
+						{
 
 							Picker picker = new Picker(
 											   entity.Id,
@@ -149,7 +149,7 @@
 
 								dirtyEntityPickers.Add(picker); // Retain any relation-mapped Picker(s) for Save event													
 							}
-						//}
+						}
 					}
 
 					if (dirtyEntityPickers.Any())

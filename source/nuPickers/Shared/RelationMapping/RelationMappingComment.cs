@@ -48,7 +48,7 @@
         /// </summary>
         /// <param name="contextId">the id of the content / media or member with the picker</param>
         /// <param name="propertyAlias">the property alias of the picker</param>
-        internal RelationMappingComment(int contextId, string propertyAlias)
+        public RelationMappingComment(int contextId, string propertyAlias)
         {
             PropertyType propertyType = null;
 			this.ParentSortOrder = -1;
@@ -96,7 +96,7 @@
         /// Initialize a new instance of <see cref="RelationMappingComment"/>
         /// </summary>
         /// <param name="comment">serialized string from the db comment field</param>
-        internal RelationMappingComment(string comment)
+        public RelationMappingComment(string comment)
         {
             if (!string.IsNullOrWhiteSpace(comment))
             {
@@ -145,7 +145,7 @@
         /// Get the serialized XML comment
         /// </summary>
         /// <returns>String XML fragment</returns>
-        internal string GetComment()
+        public string GetComment()
         {
             return "<RelationMapping PropertyAlias=\"" + this.PropertyAlias + "\" PropertyTypeId=\"" + this.PropertyTypeId.ToString() + "\" DataTypeDefinitionId=\"" + this.DataTypeDefinitionId.ToString() + "\" ParentSortOrder=\"" + this.ParentSortOrder.ToString() + "\" ChildSortOrder=\"" + this.ChildSortOrder.ToString() + "\" />";
         }
